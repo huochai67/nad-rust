@@ -1,5 +1,6 @@
 pub mod nad {
     use std::time::Duration;
+    use log::trace;
     use reqwest::redirect::Policy;
 
     #[derive(Debug)]
@@ -98,16 +99,22 @@ pub mod nad {
     pub async fn trial(config : &Config)-> Result<(), Box<dyn std::error::Error>> 
     {
         let url = format!("http://{}/quickAuthShare.do?wlanacip={}&wlanacname={}&userId=radius_share42401725&passwd=radius_share&mac={}&wlanuserip={}", config.baseurl, config.wlanacip, config.wlanacname, config.mac, config.wlanuserip);
+        trace!("sending trial. url:{}", url);
         let res = reqwest::Client::builder()
         .no_proxy()
+        .redirect(Policy::none())
         .build()?
         .post(url)
         .timeout(Duration::from_secs(5))
         .send()
         .await?;
+        if res.status() == 302
+        {
+            return Err(Box::from("trial return 302,the protal may not support trial."))
+        }
         if res.status() != 200
         {
-            return Err(Box::from("trail return non 200 status code"));
+            return Err(Box::from("trial return non 200 status code"));
         }
         return Ok(());
     }
