@@ -1,6 +1,6 @@
 pub mod nad {
     use std::time::Duration;
-    use log::trace;
+    use log::{trace, warn};
     use reqwest::redirect::Policy;
 
     #[derive(Debug)]
@@ -57,31 +57,37 @@ pub mod nad {
         Err(Box::from("connurl return unhandle status code."))
     }
     fn parse_config(url: &str) -> Result<Option<Config>, Box<dyn std::error::Error>> {
+        let key1 = "/webauth.do?";
+        let index1 = url.find(key1);
+        if index1.is_none()
+        {
+            return Err(Box::from(format!("cant find /webauth.do?. url:{}", url)));
+        }
+        let (baseurl, parm) = url.split_at(index1.unwrap());
+        let (_, argv) = parm.split_at(key1.len());
+        let arg : Vec<&str> = argv.split('&').collect();
+
         let mut wlanacip: String = String::new();
         let mut wlanacname: String = String::new();
         let mut mac: String = String::new();
         let mut wlanuserip: String = String::new();
-        let url_parsed = reqwest::Url::parse(url)?;
-        for arg in url_parsed.query_pairs(){
-            if arg.0 == "wlanacip"
+        for x in arg{
+            let index = x.find('=');
+            if index.is_none()
             {
-                wlanacip = arg.1.to_string();
+                return Err(Box::from(format!("cant find '=', x:{}", x)));
             }
-            if arg.0 == "wlanacname"
-            {
-                wlanacname = arg.1.to_string();
-            }
-            if arg.0 == "mac"
-            {
-                mac = arg.1.to_string();
-            }
-            if arg.0 == "wlanuserip"
-            {
-                wlanuserip = arg.1.to_string();
+            let (key, vaule__) = x.split_at(index.unwrap());
+            let (_, vaule) = vaule__.split_at(1);
+            match key {
+                "wlanacip" => wlanacip = vaule.to_string(),
+                "wlanacname" => wlanacname = vaule.to_string(),
+                "mac" => mac = vaule.to_string(),
+                "wlanuserip" => wlanuserip = vaule.to_string(),
+                &_ => warn!("unknown arg while parsing config. key:{}, vaule:{}", key, vaule),
             }
         }
-        let baseurl = url_parsed.host_str().unwrap().to_string();
-        Ok(Some(Config::new(baseurl, wlanacip, wlanacname, mac, wlanuserip)))
+        Ok(Some(Config::new(baseurl.to_string(), wlanacip, wlanacname, mac, wlanuserip)))
     }
 
     pub async fn try_get_config(
@@ -98,7 +104,7 @@ pub mod nad {
 
     pub async fn trial(config : &Config)-> Result<(), Box<dyn std::error::Error>> 
     {
-        let url = format!("http://{}/quickAuthShare.do?wlanacip={}&wlanacname={}&userId=radius_share42401725&passwd=radius_share&mac={}&wlanuserip={}", config.baseurl, config.wlanacip, config.wlanacname, config.mac, config.wlanuserip);
+        let url = format!("{}/quickAuthShare.do?wlanacip={}&wlanacname={}&userId=radius_share42401725&passwd=radius_share&mac={}&wlanuserip={}", config.baseurl, config.wlanacip, config.wlanacname, config.mac, config.wlanuserip);
         trace!("sending trial. url:{}", url);
         let res = reqwest::Client::builder()
         .no_proxy()
@@ -127,7 +133,7 @@ mod tests {
         let url = r"http://192.16.99.5/webauth.do?wlanacip=192.16.99.2&wlanacname=zkbras1&wlanuserip=10.200.132.22&mac=2c:33:58:e5:b6:04&vlan=3840&url=http://www.msftconnecttest.com";
         let result = parse_config(url).unwrap().unwrap();
         print!("{:?}", result);
-        assert_eq!("192.16.99.5".to_string(), result.baseurl);
+        assert_eq!("http://192.16.99.5".to_string(), result.baseurl);
         assert_eq!("192.16.99.2".to_string(), result.wlanacip);
         assert_eq!("zkbras1".to_string(), result.wlanacname);
         assert_eq!("10.200.132.22".to_string(), result.wlanuserip);
