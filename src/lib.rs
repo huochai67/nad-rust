@@ -1,10 +1,7 @@
 use std::{process, time::Duration};
 
 use log::{error, info, trace};
-
-use crate::nad::nad::trial;
-
-pub mod nad;
+use nad::nad::trial;
 
 pub async fn run_once() {
     trace!("loop start");

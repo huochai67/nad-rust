@@ -504,11 +504,21 @@ dependencies = [
 ]
 
 [[package]]
+name = "nad"
+version = "0.1.0"
+dependencies = [
+ "log",
+ "reqwest",
+ "tokio",
+]
+
+[[package]]
 name = "nad-rust"
 version = "0.1.0"
 dependencies = [
  "env_logger",
  "log",
+ "nad",
  "reqwest",
  "tokio",
 ]
