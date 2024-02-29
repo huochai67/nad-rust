@@ -1,4 +1,4 @@
-use nad_rust::run;
+use nad_rust::run_loop;
 
 #[tokio::main]
 async fn main() {
@@ -8,5 +8,6 @@ async fn main() {
 
     env_logger::init_from_env(env);
 
-    let _ = run().await;
+    log::info!("Program Start.");
+    let _ = run_loop().await;
 }
