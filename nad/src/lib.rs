@@ -1,4 +1,3 @@
-
 use log::{trace, warn};
 use reqwest::redirect::Policy;
 use serde::{Deserialize, Serialize};
@@ -49,6 +48,54 @@ async fn send_retry(
     }
 }
 
+pub struct Client {
+    config: Config,
+    retry: usize,
+    timeout: usize,
+}
+
+impl Client {
+    pub fn build(config: Config) -> Client {
+        Client {
+            config,
+            retry: 5,
+            timeout: 5,
+        }
+    }
+
+    pub fn set_retry(mut self, retry: usize) -> Client {
+        self.retry = retry;
+        self
+    }
+
+    pub fn set_timeout(mut self, timeout: usize) -> Client {
+        self.timeout = timeout;
+        self
+    }
+
+    pub async fn trial(&self) -> Result<(), Box<dyn std::error::Error>> {
+        let url = format!("{}/quickAuthShare.do?wlanacip={}&wlanacname={}&userId=radius_share42401725&passwd=radius_share&mac={}&wlanuserip={}", self.config.baseurl, self.config.wlanacip, self.config.wlanacname, self.config.mac, self.config.wlanuserip);
+        trace!("sending trial. url:{}", url);
+        let builder = reqwest::Client::builder()
+            .no_proxy()
+            .redirect(Policy::none())
+            .build()?
+            .post(url)
+            .timeout(Duration::from_secs(5));
+        let res = send_retry(builder, 5).await?;
+        if res.status() == 302 {
+            return Err(Box::from(
+                "trial return 302,the protal may not support trial.",
+            ));
+        }
+        if res.status() != 200 {
+            return Err(Box::from("trial return non 200 status code"));
+        }
+        return Ok(());
+    }
+
+    //TODO : pub async fn Auth(name: &str, password: &str) {}
+}
 fn parse_config(url: &str) -> Result<Option<Config>, Box<dyn std::error::Error>> {
     let key1 = "/webauth.do?";
     let index1 = url.find(key1);
@@ -90,18 +137,6 @@ fn parse_config(url: &str) -> Result<Option<Config>, Box<dyn std::error::Error>>
     )))
 }
 
-pub async fn try_get_config(
-    connurl: &str,
-    conndomain: &str,
-) -> Result<Option<Config>, Box<dyn std::error::Error>> {
-    let connret = check_connection(connurl, conndomain).await?;
-    if connret.is_none() {
-        return Ok(None);
-    }
-
-    Ok(parse_config(connret.unwrap().as_str())?)
-}
-
 pub async fn check_connection(
     connurl: &str,
     conndomain: &str,
@@ -128,25 +163,16 @@ pub async fn check_connection(
     Err(Box::from("connurl return unhandle status code."))
 }
 
-pub async fn trial(config: &Config) -> Result<(), Box<dyn std::error::Error>> {
-    let url = format!("{}/quickAuthShare.do?wlanacip={}&wlanacname={}&userId=radius_share42401725&passwd=radius_share&mac={}&wlanuserip={}", config.baseurl, config.wlanacip, config.wlanacname, config.mac, config.wlanuserip);
-    trace!("sending trial. url:{}", url);
-    let builder = reqwest::Client::builder()
-        .no_proxy()
-        .redirect(Policy::none())
-        .build()?
-        .post(url)
-        .timeout(Duration::from_secs(5));
-    let res = send_retry(builder, 5).await?;
-    if res.status() == 302 {
-        return Err(Box::from(
-            "trial return 302,the protal may not support trial.",
-        ));
+pub async fn try_get_config(
+    connurl: &str,
+    conndomain: &str,
+) -> Result<Option<Config>, Box<dyn std::error::Error>> {
+    let connret = check_connection(connurl, conndomain).await?;
+    if connret.is_none() {
+        return Ok(None);
     }
-    if res.status() != 200 {
-        return Err(Box::from("trial return non 200 status code"));
-    }
-    return Ok(());
+
+    Ok(parse_config(connret.unwrap().as_str())?)
 }
 
 pub struct NadAuth {

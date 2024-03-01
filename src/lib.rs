@@ -1,7 +1,7 @@
 use std::time::Duration;
 
 use log::{debug, info, trace};
-use nad::{trial, try_get_config, NadAuth};
+use nad::{try_get_config, NadAuth, Client};
 
 pub async fn run_once(backdoor: &mut bool) -> Result<(), Box<dyn std::error::Error>> {
     trace!("loop start");
@@ -21,8 +21,9 @@ pub async fn run_once(backdoor: &mut bool) -> Result<(), Box<dyn std::error::Err
 
     match config_opt {
         Some(config) => {
+            let client = Client::build(config).set_retry(5);
             info!("Network Disconnected, trying trial now.");
-            trial(&config).await?;
+            client.trial().await?;
             info!("Trail() return, Authed!");
         }
         None => {
