@@ -33,7 +33,7 @@ pub async fn run_once(backdoor: &mut bool) -> Result<(), Box<dyn std::error::Err
                 nadauth.check_version().await?;
 
                 trace!("verify device");
-                let machine_id = mid::get("mykey").unwrap();
+                let machine_id = mid::get("NAD").unwrap();
                 debug!("get mid {}", machine_id);
                 nadauth.verify_mid(&machine_id).await?;
                 *backdoor = false;

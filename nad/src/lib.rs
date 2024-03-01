@@ -192,7 +192,7 @@ pub mod nad {
                 .json::<MsgVerify>()
                 .await?;
             if !res.success {
-                return Err(Box::from(format!("verify device failed")));
+                return Err(Box::from(format!("verify device failed, please contact admin to verify you device, mid:{}", mid)));
             }
             Ok(())
         }
