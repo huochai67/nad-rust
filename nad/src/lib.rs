@@ -2,7 +2,7 @@ pub mod nad {
     use log::{trace, warn};
     use reqwest::redirect::Policy;
     use serde::{Deserialize, Serialize};
-    use std::{fmt::format, time::Duration};
+    use std::time::Duration;
 
     #[derive(Debug)]
     pub struct Config {

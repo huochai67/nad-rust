@@ -1,7 +1,7 @@
-use std::{process, time::Duration};
+use std::time::Duration;
 
-use log::{debug, error, info, trace};
-use nad::nad::{trial, Config};
+use log::{debug, info, trace};
+use nad::nad::trial;
 
 pub async fn run_once(backdoor: &mut bool) -> Result<(), Box<dyn std::error::Error>> {
     trace!("loop start");
