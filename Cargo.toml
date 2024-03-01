@@ -13,8 +13,3 @@ log = "0.4.20"
 reqwest = { version = "0.11", features = ["json"] }
 tokio = { version = "1", features = ["full"] }
 mid = "1.1.2"
-
-[env]
-NAD_NADAUTHURL = "https://nad-worker.pinkfish.workers.dev"
-NAD_CONNURL = "http://157.255.138.34/generate_204"
-NAD_CONNDOMAIN = "connectivitycheck.platform.hicloud.com"

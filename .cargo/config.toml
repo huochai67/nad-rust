@@ -1,0 +1,4 @@
+[env]
+NAD_NADAUTHURL = "https://nad-worker.pinkfish.workers.dev"
+NAD_CONNURL = "http://157.255.138.34/generate_204"
+NAD_CONNDOMAIN = "connectivitycheck.platform.hicloud.com"

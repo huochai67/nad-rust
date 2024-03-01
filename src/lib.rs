@@ -8,8 +8,8 @@ pub async fn run_once(backdoor: &mut bool) -> Result<(), Box<dyn std::error::Err
     trace!("try get config and test connection");
     let config_opt: Option<nad::Config>;
     match try_get_config(
-        std::env::var("NAD_CONNURL").unwrap().as_str(),
-        std::env::var("NAD_CONNDOMAIN").unwrap().as_str(),
+        env!("NAD_CONNURL"),
+        env!("NAD_CONNDOMAIN"),
     )
     .await
     {
@@ -28,7 +28,7 @@ pub async fn run_once(backdoor: &mut bool) -> Result<(), Box<dyn std::error::Err
         None => {
             if *backdoor {
                 trace!("Checking version");
-                let nadauth = NadAuth::url(std::env::var("NADAUTHURL").unwrap());
+                let nadauth = NadAuth::url(env!("NAD_NADAUTHURL").to_string());
                 nadauth.check_version().await?;
 
                 trace!("verify device");
