@@ -8,11 +8,13 @@ async fn main() {
     if cfg!(debug_assertions) {
         default_log_level = "trace";
     }
-    env_logger::Builder::from_env(Env::default().filter_or("RUST_LOG", default_log_level)).target(Target::Stdout).init();
+    env_logger::Builder::from_env(Env::default().filter_or("RUST_LOG", default_log_level))
+        .target(Target::Stdout)
+        .init();
 
     info!("Program Start.");
 
-    if let Err(err) = run_loop().await{
+    if let Err(err) = run_loop().await {
         error!("error: {}", err);
         std::process::exit(1);
     }

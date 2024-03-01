@@ -218,7 +218,10 @@ pub mod nad {
         async fn nadauth_test() {
             let nadauth = NadAuth::url("https://nad-worker.pinkfish.workers.dev".to_string());
             nadauth.check_version().await.expect("error check version");
-            nadauth.verify_mid("test").await.expect("error verify device");
+            nadauth
+                .verify_mid("test")
+                .await
+                .expect("error verify device");
         }
     }
 }

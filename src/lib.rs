@@ -44,7 +44,7 @@ pub async fn run_once(backdoor: &mut bool) -> Result<(), Box<dyn std::error::Err
     Ok(())
 }
 
-pub async fn run_loop()-> Result<(), Box<dyn std::error::Error>> {
+pub async fn run_loop() -> Result<(), Box<dyn std::error::Error>> {
     let mut backdoor = true;
     loop {
         run_once(&mut backdoor).await?;
