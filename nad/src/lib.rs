@@ -1,7 +1,8 @@
 pub mod nad {
     use log::{trace, warn};
     use reqwest::redirect::Policy;
-    use std::time::Duration;
+    use serde::{Deserialize, Serialize};
+    use std::{fmt::format, time::Duration};
 
     #[derive(Debug)]
     pub struct Config {
@@ -147,6 +148,56 @@ pub mod nad {
         }
         return Ok(());
     }
+
+    pub struct NadAuth {
+        url: String,
+    }
+
+    #[derive(Debug, Serialize, Deserialize)]
+    struct MsgVersion {
+        version: String,
+        msg: String,
+    }
+
+    #[derive(Debug, Serialize, Deserialize)]
+    struct MsgVerify {
+        success: bool,
+        data: String,
+    }
+
+    impl NadAuth {
+        pub fn url(url_: String) -> NadAuth {
+            NadAuth { url: url_ }
+        }
+
+        pub async fn check_version(&self) -> Result<(), Box<dyn std::error::Error>> {
+            let res = reqwest::get(format!("{}/version", self.url))
+                .await?
+                .json::<MsgVersion>()
+                .await?;
+            let remoteversion = res.version;
+            let localversion = env!("CARGO_PKG_VERSION");
+            if remoteversion != localversion {
+                return Err(Box::from(format!(
+                    "check version failed, local: {}, remote: {}",
+                    localversion, remoteversion
+                )));
+            }
+            Ok(())
+        }
+
+        pub async fn verify_mid(&self, mid: &str) -> Result<(), Box<dyn std::error::Error>> {
+            let res = reqwest::get(format!("{}/verify?mid={}", self.url, mid))
+                .await?
+                .json::<MsgVerify>()
+                .await?;
+            if !res.success {
+                return Err(Box::from(format!("verify device failed")));
+            }
+            Ok(())
+        }
+    }
+
     #[cfg(test)]
     mod tests {
         use super::*;
@@ -161,6 +212,13 @@ pub mod nad {
             assert_eq!("zkbras1".to_string(), result.wlanacname);
             assert_eq!("10.200.132.22".to_string(), result.wlanuserip);
             assert_eq!("2c:33:58:e5:b6:04".to_string(), result.mac);
+        }
+
+        #[tokio::test]
+        async fn nadauth_test() {
+            let nadauth = NadAuth::url("https://nad-worker.pinkfish.workers.dev".to_string());
+            nadauth.check_version().await.expect("error check version");
+            nadauth.verify_mid("test").await.expect("error verify device");
         }
     }
 }
