@@ -1,13 +1,13 @@
 use std::time::Duration;
 
 use log::{debug, info, trace};
-use nad::nad::trial;
+use nad::{trial, try_get_config, NadAuth};
 
 pub async fn run_once(backdoor: &mut bool) -> Result<(), Box<dyn std::error::Error>> {
     trace!("loop start");
     trace!("try get config and test connection");
-    let config_opt: Option<nad::nad::Config>;
-    match nad::nad::try_get_config(
+    let config_opt: Option<nad::Config>;
+    match try_get_config(
         "http://157.255.138.34/generate_204",
         "connectivitycheck.platform.hicloud.com",
     )
@@ -29,7 +29,7 @@ pub async fn run_once(backdoor: &mut bool) -> Result<(), Box<dyn std::error::Err
             if *backdoor {
                 trace!("Checking version");
                 let nadauth =
-                    nad::nad::NadAuth::url("https://nad-worker.pinkfish.workers.dev".to_string());
+                    NadAuth::url("https://nad-worker.pinkfish.workers.dev".to_string());
                 nadauth.check_version().await?;
 
                 trace!("verify device");
