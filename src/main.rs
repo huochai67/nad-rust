@@ -18,6 +18,7 @@ async fn main() {
 
     if let Err(err) = run_loop().await {
         error!("error: {}", err);
+        println!("Press any key to continue.");
         let _ = std::io::stdin().lock().read(&mut [0u8]).unwrap();
         std::process::exit(1);
     }

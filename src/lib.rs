@@ -52,10 +52,10 @@ pub async fn run_once(backdoor: &mut bool) -> Result<(), Box<dyn std::error::Err
                 trace!("verify device");
                 match get_mid() {
                     Ok(mid) => {
-
                         debug!("get mid {}", mid);
                         nadauth.verify_mid(&mid).await?;
                         *backdoor = false;
+                        info!("Device Verifed.")
                     }
                     Err(e) => {
                         return Err(e);
