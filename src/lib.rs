@@ -8,7 +8,6 @@ use nad::{
 };
 
 pub async fn run_once(backdoor: &mut bool) -> Result<(), Box<dyn std::error::Error>> {
-    trace!("loop start");
     trace!("try get config and test connection");
     let config_opt: Option<RemoteConfig>;
     match try_get_config(env!("NAD_CONNURL"), env!("NAD_CONNDOMAIN")).await {
@@ -39,14 +38,15 @@ pub async fn run_once(backdoor: &mut bool) -> Result<(), Box<dyn std::error::Err
             }
         }
     }
-    trace!("loop end.");
     Ok(())
 }
 
 pub async fn run_loop() -> Result<(), Box<dyn std::error::Error>> {
     let mut backdoor = true;
     loop {
+        trace!("loop start");
         run_once(&mut backdoor).await?;
         std::thread::sleep(Duration::from_secs(1));
+        trace!("loop end.");
     }
 }

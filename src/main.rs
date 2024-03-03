@@ -1,3 +1,5 @@
+use std::io::Read;
+
 use env_logger::{Env, Target};
 use log::{error, info};
 use nad_rust::run_loop;
@@ -16,6 +18,7 @@ async fn main() {
 
     if let Err(err) = run_loop().await {
         error!("error: {}", err);
+        let _ = std::io::stdin().lock().read(&mut [0u8]).unwrap();
         std::process::exit(1);
     }
 }
