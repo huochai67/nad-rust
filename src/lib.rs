@@ -68,7 +68,14 @@ pub async fn run_once(backdoor: &mut bool) -> Result<(), Box<dyn std::error::Err
 }
 
 pub async fn run_loop() -> Result<(), Box<dyn std::error::Error>> {
-    let mut backdoor = true;
+    let mut backdoor = match std::env::var("DISABLE_AUTH") {
+        Ok(_) => {
+            info!("disable auth.");
+            false
+        }
+        Err(_) => true,
+    };
+
     loop {
         trace!("loop start");
         run_once(&mut backdoor).await?;
