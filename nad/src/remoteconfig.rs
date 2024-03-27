@@ -32,7 +32,7 @@ impl RemoteConfig {
     }
 }
 
-fn parse_config(url: &str) -> Result<Option<RemoteConfig>, Box<dyn std::error::Error>> {
+pub fn parse_config(url: &str) -> Result<Option<RemoteConfig>, Box<dyn std::error::Error>> {
     debug!("try parse config : {}", url);
     let key1 = "/webauth.do?";
     let index1 = url.find(key1);

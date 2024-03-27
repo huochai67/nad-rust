@@ -1,6 +1,6 @@
 #[cfg(test)]
 mod tests {
-    use crate::{nadauth::NadAuth, parse_config};
+    use crate::{nadauth::NadAuth, remoteconfig::parse_config};
 
     #[test]
     fn one_result() {
